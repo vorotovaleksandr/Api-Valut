@@ -1,0 +1,37 @@
+.profile {
+  display: inline;
+  justify-content: center;
+  padding-top: 100px;
+  flex-grow: 1;
+  background-color: #f2f2f2;
+}
+.profile__form{
+  padding:5px;
+  margin:10px;
+
+  border: 1px solid;
+  border-radius: 4px;
+  box-shadow: 3px 3px 8px 4px #52262614;
+}
+h3 {
+  display:block;
+}
+
+.showPopUp {
+  width: 200px;
+  height: 40px;
+  background-color: #313131;
+  margin-bottom: 50px;
+  box-shadow: 3px 3px 8px 4px #313131;
+  opacity: 0;
+  color: #f5f5f5;
+  border-radius: 4px;
+  transition: opacity 0.5s; }
+.showPopUp p {
+  margin: 10px; }
+.showPopUp i {
+  margin-left: auto;
+  margin-right: 3px; }
+.showPopUpFalse {
+  display: flex;
+  opacity: 1; }

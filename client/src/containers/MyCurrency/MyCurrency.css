@@ -1,0 +1,31 @@
+.QuizList{
+    display: flex;
+    justify-content: center;
+    padding-top: 100px;
+    flex-grow: 1;
+    width: 100%;
+    background-image: url(http://wp.widewallpapers.ru/4k/money/3840x2160/money-3840x2160-003.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+    z-index: 0;
+    flex-direction: column;
+    align-items: center;
+}
+
+.QuizList::before {
+    position: absolute;
+    left: 0;
+    top: 0;
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: -moz-linear-gradient(left,  rgba(76,76,76,0.76) 0%, rgba(19,19,19,1) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(left,  rgba(76,76,76,0.76) 0%,rgba(19,19,19,1) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to right,  rgba(76,76,76,0.76) 0%,rgba(19,19,19,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c24c4c4c', endColorstr='#131313',GradientType=1 ); /* IE6-9 */
+    z-index: -1;
+}
+.QuizList h1{
+    color: #fff;
+}
