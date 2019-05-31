@@ -2,20 +2,32 @@ const Currency = require('../models/currency');
 const errorHandler = require('../routes/utils/errorHandler');
 const request = require('request-promise');
 const defaultDate = new Date().toISOString().slice( 0, 10 );
+let defaultDateRevers= [defaultDate[8],defaultDate[9],'.',defaultDate[5],defaultDate[6],'.',defaultDate[0],defaultDate[1],defaultDate[2],defaultDate[3]];
+let dDateRevString = defaultDateRevers.join('');
+let defMaxDateTime = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+let defMaxDateTimeRev= [defMaxDateTime[8],defMaxDateTime[9],'.',defMaxDateTime[5],defMaxDateTime[6],'.',defMaxDateTime[0],defMaxDateTime[1],defMaxDateTime[2],defMaxDateTime[3]];
+let dMaxDateRevString = defMaxDateTimeRev.join('');
 let i=0;
 
 module.exports.add = async (req, res) => {
-  const dateUpdate =  Currency.find({
-    date: defaultDate
+  const newDateUpdate = await Currency.findOne({
+    date: dDateRevString
   });
-  if(dateUpdate){
+  const oldDateUpdate = await Currency.findOne({
+    date: dMaxDateRevString
+  });
+  const dateUpdate = newDateUpdate && oldDateUpdate;
+  console.log('-----dateUpdate', dateUpdate);
+  if(!dateUpdate){
+     Currency.drop();
     for(i=0; i < 31; i++){
       let maxDateTime = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       let grip= [maxDateTime[8],maxDateTime[9],'.',maxDateTime[5],maxDateTime[6],'.',maxDateTime[0],maxDateTime[1],maxDateTime[2],maxDateTime[3]];
-      let cro = grip.join('');
+      let dateLink = grip.join('');
       request({
-      method: 'GET',
-        uri: `https://api.privatbank.ua/p24api/exchange_rates?json&date=${cro}`
+        json: true,
+        method: 'GET',
+        uri: `https://api.privatbank.ua/p24api/exchange_rates?json&date=${dateLink}`
       })
         .then(function (response){
           console.log('-----currency', response);
@@ -27,7 +39,7 @@ module.exports.add = async (req, res) => {
           res.status(201).json(currency)
         })
         .catch((err) => {
-
+           console.log('-----err', err);
         })
     }
   } else {
@@ -37,10 +49,7 @@ module.exports.add = async (req, res) => {
 
 };
 module.exports.getAll = async (req, res) => {
-  //email password
-  const candidate = await Currency.find({
-    email: req.body.email
-  });
+  const candidate = await Currency.find();
   if (candidate) {
     res.status(201).json(candidate)
   }
