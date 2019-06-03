@@ -9,7 +9,7 @@ import { BrowserRouter } from 'react-router-dom';
 import * as serviceWorker from './serviceWorker';
 
 const client = new ApolloClient({
-    uri: 'http://localhost:4000'
+    uri: 'https://48p1r2roz4.sse.codesandbox.io'
 
 });
 

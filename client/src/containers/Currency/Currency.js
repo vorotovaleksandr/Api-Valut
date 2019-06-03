@@ -4,21 +4,26 @@ import axios from 'axios';
 import cx from 'classnames';
 
 const defaultState = {
+  popUpCurrencyShow: {
+    valid: false,
+    value: ''
+  },
   form: {
     date: {
       value: '',
-      isValid: false
+      index: '',
+      isValid: false,
     },
   },
   popUpShow: {
     valid: false,
-    value: ''
+    value: '',
   },
   currency: [],
   currencyTitle: [],
   saleRateNB: [],
   purchaseRateNB: [],
-
+  exchangeRate: [],
 };
 
 class Currency extends Component {
@@ -75,14 +80,15 @@ class Currency extends Component {
           purchaseRateNB: this.buffer.purchaseRateNB,
         } )
       }
-    } ).catch( (req) => {      
-      this.setState( {popUpShow: {
+    } ).catch( ( req ) => {
+      this.setState( {
+        popUpShow: {
           valid: true,
-          value: req.response.data.message
-        }} );
+          value: req.response
+        }
+      } );
     } )
   }
-
 
   currencyLike = ( item ) => {
     console.log( '-----item', item.musicValue );
@@ -111,12 +117,78 @@ class Currency extends Component {
         },
       },
     } );
+    let dateState = event.target.value;
+    let dateStateRev = [dateState[8], dateState[9], '.', dateState[5], dateState[6], '.', dateState[0], dateState[1], dateState[2], dateState[3]];
+    let dateStateRevString = dateStateRev.join( '' );
+    const [testt] = this.buffer.currency.filter( el => el.date === dateStateRevString );
+    this.buffer.currencyTitle = [];
+    this.buffer.saleRateNB = [];
+    this.buffer.purchaseRateNB = [];
+    if (testt) {
+      const currencys = testt.exchangeRate;
+      currencys.forEach( ( item ) => {
+        this.buffer.currencyTitle.push(
+          item.currency
+        );
+        this.buffer.saleRateNB.push(
+          item.saleRateNB
+        );
+        this.buffer.purchaseRateNB.push(
+          item.purchaseRateNB
+        );
+      } );
+      this.setState( {
+        currencyTitle: this.buffer.currencyTitle,
+        saleRateNB: this.buffer.saleRateNB,
+        purchaseRateNB: this.buffer.purchaseRateNB,
+      } )
+    } else {
+      this.setState( {
+        currencyTitle: this.buffer.currencyTitle,
+        saleRateNB: this.buffer.currencyTitle,
+        purchaseRateNB: this.buffer.currencyTitle,
+      } )
+    }
 
+  };
+  popUpCurrencyShows = ( itm, ind ) => {
+    this.setState( {
+      popUpCurrencyShow: {
+        valid: true,
+        index: ind,
+        value: itm,
+      }
+    } )
+  };
+  popUpDontShows = () => {
+    this.setState( {
+      popUpShow: {
+        valid: false,
+        value: ''
+      }
+    } )
+  };
+  popUpCurrencyDontShows = () => {
+    this.setState( {
+      popUpCurrencyShow: {
+        valid: false,
+        value: ''
+      }
+    } )
+  };
+  showHistory = () => {
+    this.state.currency.forEach( ( item ) => {
+      const thifs = item.exchangeRate.filter( el => el.currency === this.state.popUpCurrencyShow.value );
+      this.buffer.exchangeRate.push(
+        thifs
+      );
+    } );
   };
 
   render() {
     const state = this.state;
     const popUp = state.popUpShow;
+    const popUpCur = state.popUpCurrencyShow;
     let defaultDate = new Date().toISOString().slice( 0, 10 );
     let days = 30;
     const maxDateTime = new Date( Date.now() - days * 24 * 60 * 60 * 1000 ).toISOString().slice( 0, 10 );
@@ -125,9 +197,11 @@ class Currency extends Component {
     let dateStateRevString = dateStateRev.join( '' );
     const [testtt] = state.currency.filter( el => el.date === dateStateRevString );
 
-
     return (
-      <div className={classes.QuizList}>
+      <div
+        onClick={this.popUpDontShows}
+        className={classes.QuizList}
+      >
         <div>
           <div className="form-group row">
             <label
@@ -148,53 +222,70 @@ class Currency extends Component {
               />
             </div>
           </div>
+          <div>
+          </div>
+          <div
+            className={cx( classes.showPopUp, popUpCur.valid ? classes.showPopUpFalse : null )}
+          >
+            <p className={classes.cur__text} onClick={this.showHistory}>Show history</p>
+            <p
+              className={classes.cur__textValut}
+            >{popUpCur.value}</p>
+            <p className={classes.cur__text} onClick={this.likeCurrency}>Like currency</p>
+            <i
+              className="fa fa-angle-up "
+              onClick={this.popUpCurrencyDontShows}
+            />
+          </div>
           <table className={classes.genTbl}>
-            <tbody>            
+            <tbody>
             <tr>
               <th>Currency</th>
-              {state.currencyTitle.map((itm,ind) =>{
-                return(
+              {state.currencyTitle.map( ( itm, ind ) => {
+                return (
                   <td
                     key={ind}
+                    onClick={() => this.popUpCurrencyShows( itm, ind )}
+                    className={classes.td__title}
                   >
                     {itm}
                   </
-                  td
+                    td
                   >
                 )
-              }) }
+              } )}
             </tr>
             <tr>
               <th>Sale rate</th>
-              {state.saleRateNB.map((itm,ind) =>{
-                return(
+              {state.saleRateNB.map( ( itm, index ) => {
+                return (
                   <td
-                    key={ind}
+                    key={index}
                   >
                     {itm}
                   </
                     td
                   >
                 )
-              }) }
+              } )}
             </tr>
             <tr>
               <th>Purchase rate</th>
-              {state.purchaseRateNB.map((itm,ind) =>{
-                return(
+              {state.purchaseRateNB.map( ( itm, ind1 ) => {
+                return (
                   <td
-                    key={ind}
+                    key={ind1}
                   >
                     {itm}
                   </
                     td
                   >
                 )
-              }) }
+              } )}
             </tr>
             </tbody>
           </table>
-         
+
         </div>
         <div className={cx( classes.showPopUp, !popUp.valid ? classes.showPopUpTrue : classes.showPopUpFalse )}>
           <p>{popUp.value}</p>

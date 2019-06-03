@@ -19,7 +19,6 @@ module.exports.add = async (req, res) => {
   const dateUpdate = newDateUpdate && oldDateUpdate;
   console.log('-----dateUpdate', dateUpdate);
   if(!dateUpdate){
-     Currency.drop();
     for(i=0; i < 31; i++){
       let maxDateTime = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       let grip= [maxDateTime[8],maxDateTime[9],'.',maxDateTime[5],maxDateTime[6],'.',maxDateTime[0],maxDateTime[1],maxDateTime[2],maxDateTime[3]];
@@ -30,7 +29,6 @@ module.exports.add = async (req, res) => {
         uri: `https://api.privatbank.ua/p24api/exchange_rates?json&date=${dateLink}`
       })
         .then(function (response){
-          console.log('-----currency', response);
           const currency = new Currency(
             response
           );

@@ -45,12 +45,13 @@
     color: rgb(160, 160, 160);
 }
 .showPopUp {
-    width: 200px;
+    width: 240px;
     height: 70px;
     background-color: #313131;
     margin-bottom: 50px;
     box-shadow: 3px 3px 8px 4px #313131;
     opacity: 0;
+    display: none;
     color: #f5f5f5;
     border-radius: 4px;
     transition: opacity 0.5s; }
@@ -76,4 +77,24 @@ a {
     box-shadow: 3px 3px 8px 4px #52262614;
     background-color: white;
     opacity: 0.7;
+}
+.cur__text{
+    cursor:pointer;
+}
+.cur__text:hover{
+    cursor:pointer;
+    border-radius: 3px;
+    border: 1px solid;
+    box-shadow: 3px 3px 8px 4px #cccccc;
+    opacity:0.7;
+}
+.cur__textValut{
+    position: relative;
+}
+.td__title:hover{
+    cursor:pointer;
+    border-radius: 3px;
+    border: 1px solid;
+    box-shadow: 3px 3px 8px 4px #cccccc;
+    opacity:0.7;
 }
