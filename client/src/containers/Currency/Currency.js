@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import classes from './Currency.css';
 import axios from 'axios';
 import cx from 'classnames';
+import CircularUnderLoad from '../../components/UI/Loader/Loader'
 
 const defaultState = {
   popUpCurrencyShow: {
@@ -24,6 +25,7 @@ const defaultState = {
   saleRateNB: [],
   purchaseRateNB: [],
   exchangeRate: [],
+  isLoading: true,
 };
 
 class Currency extends Component {
@@ -33,7 +35,7 @@ class Currency extends Component {
   componentDidMount() {
     let dateStatea = new Date().toISOString().slice( 0, 10 );
     axios( {
-      url: 'http://localhost:5000/currency/getall',
+      url: 'http://localhost:5000/currency/add',
       method: 'POST',
     } ).then( req => {
       req.data.forEach(
@@ -78,7 +80,10 @@ class Currency extends Component {
           currencyTitle: this.buffer.currencyTitle,
           saleRateNB: this.buffer.saleRateNB,
           purchaseRateNB: this.buffer.purchaseRateNB,
-        } )
+        } );
+        this.setState({
+          isLoading: false,
+        });
       }
     } ).catch( ( req ) => {
       this.setState( {
@@ -90,15 +95,21 @@ class Currency extends Component {
     } )
   }
 
-  currencyLike = ( item ) => {
-    console.log( '-----item', item.musicValue );
+  likeCurrency = (  ) => {
+    this.state.currency.forEach( ( item ) => {
+      const thifs = item.exchangeRate.filter( el => el.currency === this.state.popUpCurrencyShow.value );
+      this.buffer.exchangeRate.push(
+        thifs
+      );
+    } );
+    console.log('-----this.buffer.exchangeRate', this.buffer.exchangeRate);
     const email = localStorage.getItem( 'email' );
     axios( {
       url: 'http://localhost:5000/currency/update',
       method: 'POST',
       data: {
         email,
-        value: item.musicValue
+        value: this.buffer.exchangeRate
       }
     } ).then( req => {
 
@@ -198,6 +209,7 @@ class Currency extends Component {
     const [testtt] = state.currency.filter( el => el.date === dateStateRevString );
 
     return (
+
       <div
         onClick={this.popUpDontShows}
         className={classes.QuizList}
@@ -237,7 +249,8 @@ class Currency extends Component {
               onClick={this.popUpCurrencyDontShows}
             />
           </div>
-          <table className={classes.genTbl}>
+          { this.state.isLoading && <CircularUnderLoad />}
+          { !this.state.isLoading && <table className={classes.genTbl}>
             <tbody>
             <tr>
               <th>Currency</th>
@@ -284,8 +297,7 @@ class Currency extends Component {
               } )}
             </tr>
             </tbody>
-          </table>
-
+          </table> }
         </div>
         <div className={cx( classes.showPopUp, !popUp.valid ? classes.showPopUpTrue : classes.showPopUpFalse )}>
           <p>{popUp.value}</p>
