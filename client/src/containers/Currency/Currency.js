@@ -1,9 +1,17 @@
 import React, { Component } from 'react';
-import classes from './Currency.css';
 import axios from 'axios';
 import cx from 'classnames';
+import moment from 'moment';
+import gql from 'graphql-tag';
+import { Query } from 'react-apollo';
+import DatePicker from "react-datepicker";
+import { subDays } from "date-fns";
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
+import classes from './Currency.css';
+import Chart from '../../components/UI/Chart/Chart'
 import CircularUnderLoad from '../../components/UI/Loader/Loader'
 
+const FORMAT_TYPE = 'DD.MM.YYYY';
 const defaultState = {
   popUpCurrencyShow: {
     valid: false,
@@ -21,11 +29,16 @@ const defaultState = {
     value: '',
   },
   currency: [],
+  date: [],
   currencyTitle: [],
   saleRateNB: [],
   purchaseRateNB: [],
   exchangeRate: [],
   isLoading: true,
+  dDateRevString: moment().format( FORMAT_TYPE ),
+  dMaxDateRevString: moment().subtract( 30, 'days' ).format( FORMAT_TYPE ),
+  data: [],
+  popUpCurrencyShowHistory: false
 };
 
 class Currency extends Component {
@@ -33,13 +46,16 @@ class Currency extends Component {
   buffer = this.state;
 
   componentDidMount() {
-    let dateStatea = new Date().toISOString().slice( 0, 10 );
+
     axios( {
-      url: 'http://localhost:5000/currency/add',
+      url: 'http://localhost:5000/currency/getAll',
       method: 'POST',
     } ).then( req => {
       req.data.forEach(
         ( item ) => {
+          this.buffer.date.push(
+            item.date
+          );
           this.buffer.currency.push(
             {
               date: item.date,
@@ -52,16 +68,15 @@ class Currency extends Component {
       this.setState( {
           form: {
             date: {
-              value: dateStatea,
+              value: new Date(),
               isValid: true
             },
           },
-          currency: this.buffer.currency
+          currency: this.buffer.currency,
+          date: this.buffer.date,
         }
       );
-      let dateState = this.state.form.date.value;
-      let dateStateRev = [dateState[8], dateState[9], '.', dateState[5], dateState[6], '.', dateState[0], dateState[1], dateState[2], dateState[3]];
-      let dateStateRevString = dateStateRev.join( '' );
+      let dateStateRevString = this.state.dDateRevString;
       const [testtt] = this.buffer.currency.filter( el => el.date === dateStateRevString );
       if (this.buffer.currency) {
         const currencys = testtt.exchangeRate;
@@ -81,9 +96,9 @@ class Currency extends Component {
           saleRateNB: this.buffer.saleRateNB,
           purchaseRateNB: this.buffer.purchaseRateNB,
         } );
-        this.setState({
+        this.setState( {
           isLoading: false,
-        });
+        } );
       }
     } ).catch( ( req ) => {
       this.setState( {
@@ -95,14 +110,13 @@ class Currency extends Component {
     } )
   }
 
-  likeCurrency = (  ) => {
+  likeCurrency = () => {
     this.state.currency.forEach( ( item ) => {
       const thifs = item.exchangeRate.filter( el => el.currency === this.state.popUpCurrencyShow.value );
       this.buffer.exchangeRate.push(
         thifs
       );
     } );
-    console.log('-----this.buffer.exchangeRate', this.buffer.exchangeRate);
     const email = localStorage.getItem( 'email' );
     axios( {
       url: 'http://localhost:5000/currency/update',
@@ -118,20 +132,18 @@ class Currency extends Component {
       console.log( 'error' );
     } )
   };
-  onChangeInput = ( event, field ) => {
+  onChangeInput = ( date ) => {
     this.setState( {
       form: {
         ...this.state.form,
-        [field]: {
-          value: event.target.value,
+        date: {
+          value: date,
           isValid: true,
         },
       },
     } );
-    let dateState = event.target.value;
-    let dateStateRev = [dateState[8], dateState[9], '.', dateState[5], dateState[6], '.', dateState[0], dateState[1], dateState[2], dateState[3]];
-    let dateStateRevString = dateStateRev.join( '' );
-    const [testt] = this.buffer.currency.filter( el => el.date === dateStateRevString );
+    let dater = moment( date ).format( FORMAT_TYPE );
+    const [testt] = this.buffer.currency.filter( el => el.date === dater );
     this.buffer.currencyTitle = [];
     this.buffer.saleRateNB = [];
     this.buffer.purchaseRateNB = [];
@@ -188,52 +200,64 @@ class Currency extends Component {
     } )
   };
   showHistory = () => {
-    this.state.currency.forEach( ( item ) => {
-      const thifs = item.exchangeRate.filter( el => el.currency === this.state.popUpCurrencyShow.value );
-      this.buffer.exchangeRate.push(
-        thifs
-      );
-    } );
+    this.setState( {
+      popUpCurrencyShowHistory: true
+    } )
   };
 
   render() {
+    const currencyPurchaseRate = [];
+    const currencySalesRate = [];
     const state = this.state;
     const popUp = state.popUpShow;
     const popUpCur = state.popUpCurrencyShow;
-    let defaultDate = new Date().toISOString().slice( 0, 10 );
-    let days = 30;
-    const maxDateTime = new Date( Date.now() - days * 24 * 60 * 60 * 1000 ).toISOString().slice( 0, 10 );
-    let dateState = state.form.date.value;
-    let dateStateRev = [dateState[8], dateState[9], '.', dateState[5], dateState[6], '.', dateState[0], dateState[1], dateState[2], dateState[3]];
-    let dateStateRevString = dateStateRev.join( '' );
-    const [testtt] = state.currency.filter( el => el.date === dateStateRevString );
 
     return (
-
       <div
         onClick={this.popUpDontShows}
         className={classes.QuizList}
       >
+        {this.state.popUpCurrencyShowHistory && <Query
+          query={gql`
+      {history(item:"${state.popUpCurrencyShow.value}"){exchangeRate{currency,baseCurrency,saleRateNB,purchaseRateNB}}}
+    `}
+        >
+          {( {loading, error, data} ) => {
+
+            if (loading) return <p>Loading...</p>;
+            if (error) return <p>Error :(</p>;
+            data.history.forEach( ( item ) => {
+              const {purchaseRateNB, saleRateNB} = item.exchangeRate[0];
+              currencyPurchaseRate.push(
+                purchaseRateNB
+              );
+              currencySalesRate.push(
+                saleRateNB
+              );
+            } );
+            const curPurRate = currencyPurchaseRate.reverse();
+            const curSaleRate = currencySalesRate.reverse();
+            const curDateRate = this.state.date.reverse();
+            this.buffer.data = [];
+            if (curPurRate.length === curSaleRate.length) {
+              for (let i = 0; i < curPurRate.length; i++) {
+                this.buffer.data.push( {
+                  name: curDateRate[i],
+                  purchase: +curPurRate[i],
+                  sale: +curSaleRate[i]
+                } )
+              }
+            }
+            return (
+              <div>
+                <Chart
+                  data={this.buffer.data}
+                />
+              </div>
+            );
+          }}
+        </Query>}
         <div>
-          <div className="form-group row">
-            <label
-              htmlFor="example-date-input"
-              className="col-2 col-form-label"
-            >
-              chose date in currency
-            </label>
-            <div className="col-10">
-              <input
-                className="form-control"
-                type="date"
-                defaultValue={this.state.form.date.value}
-                min={maxDateTime}
-                max={defaultDate}
-                id="example-date-input"
-                onChange={event => this.onChangeInput( event, 'date' )}
-              />
-            </div>
-          </div>
           <div>
           </div>
           <div
@@ -249,8 +273,16 @@ class Currency extends Component {
               onClick={this.popUpCurrencyDontShows}
             />
           </div>
-          { this.state.isLoading && <CircularUnderLoad />}
-          { !this.state.isLoading && <table className={classes.genTbl}>
+          {this.state.isLoading && <CircularUnderLoad/>}
+          <DatePicker
+            minDate={subDays( new Date(), 30 )}
+            maxDate={new Date()}
+            selected={state.form.date.value}
+            onChange={this.onChangeInput}
+            dateFormat={'dd.MM.YYYY'}
+            showDateInput
+          />
+          {!this.state.isLoading && <table className={classes.genTbl}>
             <tbody>
             <tr>
               <th>Currency</th>
@@ -297,7 +329,7 @@ class Currency extends Component {
               } )}
             </tr>
             </tbody>
-          </table> }
+          </table>}
         </div>
         <div className={cx( classes.showPopUp, !popUp.valid ? classes.showPopUpTrue : classes.showPopUpFalse )}>
           <p>{popUp.value}</p>

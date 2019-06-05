@@ -15,9 +15,10 @@ const resolvers = {
       if (!args.item) {
         throw new Error('id is required')
       }
-      return Currency.findOne(
+      return Currency.find(
       {"exchangeRate.currency": `${args.item}` },
       {exchangeRate: {$elemMatch: {currency: args.item}}})
+
       }}
 
   };

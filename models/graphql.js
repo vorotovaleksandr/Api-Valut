@@ -17,7 +17,7 @@ type Currency {
 type Query {
   currencys: [Currency] 
   date(date: String): Currency 
-  history(item: String): Currency 
+  history(item: String): [Currency]
   }
 `;
 module.exports = typeDef;

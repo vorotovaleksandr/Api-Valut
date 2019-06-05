@@ -28,7 +28,6 @@ const currencySchema = new Schema({
       currency:{
         type: String
       }
-
     }],
 });
 

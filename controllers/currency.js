@@ -14,10 +14,12 @@ module.exports.add = async ( req, res ) => {
     const oldDateUpdate = await Currency.findOne( {
       date: dMaxDateRevString
     } );
+
     const dateUpdate = newDateUpdate && oldDateUpdate;
     if (!dateUpdate) {
-      for (let i = 25; i < 31; i++) {
-        let dataByDate = moment( dMaxDateRevString ).add( i, 'days' ).format( FORMAT_TYPE );
+      for (let i = 0; i < 31; i++) {
+        let dataByDate = moment( dMaxDateRevString ).subtract( i, 'days' ).format( FORMAT_TYPE );
+        console.log( '-----dateUpdate', dataByDate );
         const resp = await request( {
           json: true,
           method: 'GET',
@@ -28,8 +30,6 @@ module.exports.add = async ( req, res ) => {
         );
         currency.save();
       }
-      const allCurrency =  Currency.find();
-      res.status( 201 ).json( allCurrency )
     } else {
       const allCurrency = await Currency.find();
       res.status( 201 ).json( allCurrency )
@@ -37,6 +37,7 @@ module.exports.add = async ( req, res ) => {
   } catch (err) {
     res.status( 500 ).send( err );
   }
+
 };
 module.exports.getAll = async ( req, res ) => {
   const candidate = await Currency.find();
@@ -46,6 +47,8 @@ module.exports.getAll = async ( req, res ) => {
 };
 
 module.exports.update = async ( req, res ) => {
+  //email password
+  console.log( 'req.body', req.body );
   const currency = new Currency( {
     value: req.body.value,
     email: req.body.email
