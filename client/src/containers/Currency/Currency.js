@@ -111,27 +111,27 @@ class Currency extends Component {
   }
 
   likeCurrency = () => {
-    this.state.currency.forEach( ( item ) => {
-      const thifs = item.exchangeRate.filter( el => el.currency === this.state.popUpCurrencyShow.value );
-      this.buffer.exchangeRate.push(
-        thifs
-      );
-    } );
     const email = localStorage.getItem( 'email' );
+    const curPick = this.state.popUpCurrencyShow.value
     axios( {
       url: 'http://localhost:5000/currency/update',
       method: 'POST',
       data: {
         email,
-        value: this.buffer.exchangeRate
+        value: curPick
       }
     } ).then( req => {
-
-
+      this.setState( {
+        popUpShow: {
+          valid: true,
+          value: 'currency add'
+        }
+      } );
     } ).catch( () => {
       console.log( 'error' );
     } )
   };
+
   onChangeInput = ( date ) => {
     this.setState( {
       form: {
@@ -223,7 +223,6 @@ class Currency extends Component {
     `}
         >
           {( {loading, error, data} ) => {
-
             if (loading) return <p>Loading...</p>;
             if (error) return <p>Error :(</p>;
             data.history.forEach( ( item ) => {
@@ -282,6 +281,7 @@ class Currency extends Component {
             dateFormat={'dd.MM.YYYY'}
             showDateInput
           />
+          <div className={classes.container}>
           {!this.state.isLoading && <table className={classes.genTbl}>
             <tbody>
             <tr>
@@ -330,6 +330,7 @@ class Currency extends Component {
             </tr>
             </tbody>
           </table>}
+          </div>
         </div>
         <div className={cx( classes.showPopUp, !popUp.valid ? classes.showPopUpTrue : classes.showPopUpFalse )}>
           <p>{popUp.value}</p>

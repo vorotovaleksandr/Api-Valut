@@ -1,4 +1,5 @@
 const Currency = require( '../models/currency' );
+const MyCurrency = require( '../models/myCurrency' );
 const errorHandler = require( '../routes/utils/errorHandler' );
 const request = require( 'request-promise' );
 const moment = require( 'moment' );
@@ -18,7 +19,7 @@ module.exports.add = async ( req, res ) => {
     const dateUpdate = newDateUpdate && oldDateUpdate;
     if (!dateUpdate) {
       for (let i = 0; i < 31; i++) {
-        let dataByDate = moment( dMaxDateRevString ).subtract( i, 'days' ).format( FORMAT_TYPE );
+        let dataByDate = moment( dDateRevString ).subtract( i, 'days' ).format( FORMAT_TYPE );
         console.log( '-----dateUpdate', dataByDate );
         const resp = await request( {
           json: true,
@@ -30,6 +31,7 @@ module.exports.add = async ( req, res ) => {
         );
         currency.save();
       }
+
     } else {
       const allCurrency = await Currency.find();
       res.status( 201 ).json( allCurrency )
@@ -47,15 +49,14 @@ module.exports.getAll = async ( req, res ) => {
 };
 
 module.exports.update = async ( req, res ) => {
-  //email password
   console.log( 'req.body', req.body );
-  const currency = new Currency( {
+  const currency = new MyCurrency( {
     value: req.body.value,
     email: req.body.email
   } );
   try {
     await currency.save();
-    res.status( 201 ).json( currency )
+    res.status( 201 )
   } catch (e) {
     errorHandler( res, e )
   }

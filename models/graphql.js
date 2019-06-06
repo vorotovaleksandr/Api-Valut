@@ -1,6 +1,10 @@
 const { gql } = require('apollo-server-express');
 
 const typeDef = gql`
+type UserCurrency {
+  email: String
+  value: String 
+  }
 type ExchangeRate {
    baseCurrency: String
    saleRateNB: String
@@ -18,6 +22,7 @@ type Query {
   currencys: [Currency] 
   date(date: String): Currency 
   history(item: String): [Currency]
+  userCurrency(email: String): [UserCurrency]
   }
 `;
 module.exports = typeDef;

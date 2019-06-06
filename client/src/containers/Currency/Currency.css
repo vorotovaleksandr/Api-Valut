@@ -26,24 +26,6 @@
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c24c4c4c', endColorstr='#131313',GradientType=1 ); /* IE6-9 */
     z-index: -1;
 }
-.QuizList h1{
-   color: #fff; 
-}
-.QuizList ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-.QuizList li {
-    margin-bottom: 10px;
-}
-.QuizList li a {
-    text-decoration: none;
-    color: #fff;
-}
-.QuizList li a:hover {    
-    color: rgb(160, 160, 160);
-}
 .showPopUp {
     width: 240px;
     height: 70px;
@@ -97,4 +79,46 @@ a {
     border: 1px solid;
     box-shadow: 3px 3px 8px 4px #cccccc;
     opacity:0.7;
+}
+* {box-sizing: border-box;}
+body {margin: 0;}
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 auto;
+}
+table {
+    width: 100%;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size: 14px;
+    border-collapse: collapse;
+    text-align: center;
+}
+th,
+td:first-child {
+    background: #AFCDE7;
+    color: white;
+    padding: 10px 20px;
+}
+th,
+td {
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    border-color: white;
+}
+td {
+    background: #D8E6F3;
+}
+th:first-child,
+td:first-child {
+    text-align: left;
+}
+@media (max-width: 760px) {
+    table {
+        font-size: 10px;
+    }
+    th,
+    td:first-child {
+        padding: 0px;
+    }
 }
