@@ -10,6 +10,7 @@ import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import classes from './Currency.css';
 import Chart from '../../components/UI/Chart/Chart'
 import CircularUnderLoad from '../../components/UI/Loader/Loader'
+import { ListGroup } from "react-bootstrap";
 
 const FORMAT_TYPE = 'DD.MM.YYYY';
 const defaultState = {
@@ -46,73 +47,92 @@ class Currency extends Component {
   buffer = this.state;
 
   componentDidMount() {
-
-    axios( {
-      url: 'http://localhost:5000/currency/getAll',
-      method: 'POST',
-    } ).then( req => {
-      req.data.forEach(
-        ( item ) => {
-          this.buffer.date.push(
-            item.date
-          );
-          this.buffer.currency.push(
-            {
-              date: item.date,
-              bank: item.bank,
-              baseCurrency: item.baseCurrency,
-              baseCurrencyLit: item.baseCurrencyLit,
-              exchangeRate: item.exchangeRate
+    if(this.state.currency.length === 0) {
+      axios( {
+        url: 'http://localhost:5000/currency/add',
+        method: 'POST',
+      } ).then( req => {
+        console.log( '-----req', req );
+        axios( {
+          url: 'http://localhost:5000/currency/getAll',
+          method: 'POST',
+        } ).then( req => {
+          req.data.forEach(
+            ( item ) => {
+              this.buffer.date.push(
+                item.date
+              );
+              this.buffer.currency.push(
+                {
+                  date: item.date,
+                  bank: item.bank,
+                  baseCurrency: item.baseCurrency,
+                  baseCurrencyLit: item.baseCurrencyLit,
+                  exchangeRate: item.exchangeRate
+                } );
             } );
-        } );
-      this.setState( {
-          form: {
-            date: {
-              value: new Date(),
-              isValid: true
-            },
-          },
-          currency: this.buffer.currency,
-          date: this.buffer.date,
-        }
-      );
-      let dateStateRevString = this.state.dDateRevString;
-      const [testtt] = this.buffer.currency.filter( el => el.date === dateStateRevString );
-      if (this.buffer.currency) {
-        const currencys = testtt.exchangeRate;
-        currencys.forEach( ( item ) => {
-          this.buffer.currencyTitle.push(
-            item.currency
+          this.setState( {
+              form: {
+                date: {
+                  value: new Date(),
+                  isValid: true
+                },
+              },
+              currency: this.buffer.currency,
+              date: this.buffer.date,
+            }
           );
-          this.buffer.saleRateNB.push(
-            item.saleRateNB
-          );
-          this.buffer.purchaseRateNB.push(
-            item.purchaseRateNB
-          );
-        } );
+          let dateStateRevString = this.state.dDateRevString;
+          const [testtt] = this.buffer.currency.filter( el => el.date === dateStateRevString );
+          if (this.buffer.currency) {
+            const currencys = testtt.exchangeRate;
+            currencys.forEach( ( item ) => {
+              this.buffer.currencyTitle.push(
+                item.currency
+              );
+              this.buffer.saleRateNB.push(
+                item.saleRateNB
+              );
+              this.buffer.purchaseRateNB.push(
+                item.purchaseRateNB
+              );
+            } );
+            this.setState( {
+              currencyTitle: this.buffer.currencyTitle,
+              saleRateNB: this.buffer.saleRateNB,
+              purchaseRateNB: this.buffer.purchaseRateNB,
+            } );
+            this.setState( {
+              isLoading: false,
+            } );
+          }
+        } ).catch( ( req ) => {
+          this.setState( {
+            popUpShow: {
+              valid: true,
+              value: req.response
+            }
+          } );
+        } )
+      } ).catch( err => {
+        console.log( '-----err', err );
         this.setState( {
-          currencyTitle: this.buffer.currencyTitle,
-          saleRateNB: this.buffer.saleRateNB,
-          purchaseRateNB: this.buffer.purchaseRateNB,
+          popUpShow: {
+            valid: true,
+            value: err.response
+          }
         } );
-        this.setState( {
-          isLoading: false,
-        } );
-      }
-    } ).catch( ( req ) => {
+      } )
+    }else{
       this.setState( {
-        popUpShow: {
-          valid: true,
-          value: req.response
-        }
+        isLoading: false,
       } );
-    } )
+    }
   }
 
   likeCurrency = () => {
     const email = localStorage.getItem( 'email' );
-    const curPick = this.state.popUpCurrencyShow.value
+    const curPick = this.state.popUpCurrencyShow.value;
     axios( {
       url: 'http://localhost:5000/currency/update',
       method: 'POST',
@@ -124,11 +144,16 @@ class Currency extends Component {
       this.setState( {
         popUpShow: {
           valid: true,
-          value: 'currency add'
+          value: req.data.message
         }
       } );
-    } ).catch( () => {
-      console.log( 'error' );
+    } ).catch( req => {
+      this.setState( {
+        popUpShow: {
+          valid: true,
+          value: req.data.message
+        }
+      } );
     } )
   };
 
@@ -204,6 +229,11 @@ class Currency extends Component {
       popUpCurrencyShowHistory: true
     } )
   };
+  dontShowHistory = () => {
+    this.setState( {
+      popUpCurrencyShowHistory: false
+    } )
+  };
 
   render() {
     const currencyPurchaseRate = [];
@@ -217,7 +247,7 @@ class Currency extends Component {
         onClick={this.popUpDontShows}
         className={classes.QuizList}
       >
-        {this.state.popUpCurrencyShowHistory && <Query
+        {state.popUpCurrencyShowHistory && <Query
           query={gql`
       {history(item:"${state.popUpCurrencyShow.value}"){exchangeRate{currency,baseCurrency,saleRateNB,purchaseRateNB}}}
     `}
@@ -226,16 +256,21 @@ class Currency extends Component {
             if (loading) return <p>Loading...</p>;
             if (error) return <p>Error :(</p>;
             data.history.forEach( ( item ) => {
-              const {purchaseRateNB, saleRateNB} = item.exchangeRate[0];
-              currencyPurchaseRate.push(
-                purchaseRateNB
-              );
-              currencySalesRate.push(
-                saleRateNB
-              );
-            } );
+                const {purchaseRateNB, saleRateNB} = item.exchangeRate[0];
+                currencyPurchaseRate.push(
+                  purchaseRateNB
+                );
+                currencySalesRate.push(
+                  saleRateNB
+                );
+              }
+            );
             const curPurRate = currencyPurchaseRate.reverse();
+            const minPurItem = Math.min.apply( null, curPurRate );
+            const maxPurItem = Math.max.apply( null, curPurRate );
             const curSaleRate = currencySalesRate.reverse();
+            const minSaleItem = Math.min.apply( null, curSaleRate );
+            const maxSaleItem = Math.max.apply( null, curSaleRate );
             const curDateRate = this.state.date.reverse();
             this.buffer.data = [];
             if (curPurRate.length === curSaleRate.length) {
@@ -248,31 +283,56 @@ class Currency extends Component {
               }
             }
             return (
-              <div>
+              <div
+                className={classes.positionRel}
+              >
+                <i
+                  className={`fa fa-times-circle ${classes.margin__left}`}
+                  aria-hidden="true"
+                  onClick={this.dontShowHistory}
+                />
                 <Chart
                   data={this.buffer.data}
                 />
+                <ListGroup>
+                  <ListGroup.Item variant="success">Max selling price : {maxSaleItem}</ListGroup.Item>
+                  <ListGroup.Item variant="danger">Min selling price : {minSaleItem}</ListGroup.Item>
+                  <ListGroup.Item variant="success">Max purchase price: {maxPurItem}</ListGroup.Item>
+                  <ListGroup.Item variant="danger">Min purchase price: {minPurItem}</ListGroup.Item>
+                </ListGroup>
               </div>
             );
           }}
         </Query>}
-        <div>
+        <div className={classes.contentScroll}>
           <div>
           </div>
           <div
             className={cx( classes.showPopUp, popUpCur.valid ? classes.showPopUpFalse : null )}
           >
-            <p className={classes.cur__text} onClick={this.showHistory}>Show history</p>
+            <p
+              className={classes.cur__text}
+              onClick={this.showHistory}
+            >
+              Show history
+            </p>
             <p
               className={classes.cur__textValut}
-            >{popUpCur.value}</p>
-            <p className={classes.cur__text} onClick={this.likeCurrency}>Like currency</p>
+            >
+              {popUpCur.value}
+            </p>
+            <p
+              className={classes.cur__text}
+              onClick={this.likeCurrency}
+            >
+              Like currency
+            </p>
             <i
               className="fa fa-angle-up "
               onClick={this.popUpCurrencyDontShows}
             />
           </div>
-          {this.state.isLoading && <CircularUnderLoad/>}
+          {state.isLoading && <CircularUnderLoad/>}
           <DatePicker
             minDate={subDays( new Date(), 30 )}
             maxDate={new Date()}
@@ -282,59 +342,66 @@ class Currency extends Component {
             showDateInput
           />
           <div className={classes.container}>
-          {!this.state.isLoading && <table className={classes.genTbl}>
-            <tbody>
-            <tr>
-              <th>Currency</th>
-              {state.currencyTitle.map( ( itm, ind ) => {
-                return (
-                  <td
-                    key={ind}
-                    onClick={() => this.popUpCurrencyShows( itm, ind )}
-                    className={classes.td__title}
-                  >
-                    {itm}
-                  </
-                    td
-                  >
-                )
-              } )}
-            </tr>
-            <tr>
-              <th>Sale rate</th>
-              {state.saleRateNB.map( ( itm, index ) => {
-                return (
-                  <td
-                    key={index}
-                  >
-                    {itm}
-                  </
-                    td
-                  >
-                )
-              } )}
-            </tr>
-            <tr>
-              <th>Purchase rate</th>
-              {state.purchaseRateNB.map( ( itm, ind1 ) => {
-                return (
-                  <td
-                    key={ind1}
-                  >
-                    {itm}
-                  </
-                    td
-                  >
-                )
-              } )}
-            </tr>
-            </tbody>
-          </table>}
+            {!state.isLoading && <table className={classes.genTbl}>
+              <tbody>
+              <tr>
+                <th>Currency</th>
+                {state.currencyTitle.map( ( itm, ind ) => {
+                    return (
+                      <td
+                        key={ind}
+                        onClick={() => this.popUpCurrencyShows( itm, ind )}
+                        className={classes.td__title}
+                      >
+                        {itm}
+                      </td>
+                    )
+                  }
+                )}
+              </tr>
+              <tr>
+                <th>Sale rate</th>
+                {state.saleRateNB.map( ( itm, index ) => {
+                    return (
+                      <td
+                        key={index}
+                      >
+                        {itm}
+                      </td>
+                    )
+                  }
+                )}
+              </tr>
+              <tr>
+                <th>Purchase rate</th>
+                {state.purchaseRateNB.map( ( itm, ind1 ) => {
+                    return (
+                      <td
+                        key={ind1}
+                      >
+                        {itm}
+                      </td>
+                    )
+                  }
+                )}
+              </tr>
+              </tbody>
+            </table>
+            }
           </div>
         </div>
-        <div className={cx( classes.showPopUp, !popUp.valid ? classes.showPopUpTrue : classes.showPopUpFalse )}>
-          <p>{popUp.value}</p>
-          <i className="fa fa-angle-down" aria-hidden="true" onClick={this.popupClose}/></div>
+        <div
+          className={cx( classes.showPopUp, !popUp.valid ? classes.showPopUpTrue : classes.showPopUpFalse )}
+        >
+          <p>
+            {popUp.value}
+          </p>
+          <i
+            className="fa fa-angle-down"
+            aria-hidden="true"
+            onClick={this.popupClose}
+          />
+        </div>
       </div>
     )
   }

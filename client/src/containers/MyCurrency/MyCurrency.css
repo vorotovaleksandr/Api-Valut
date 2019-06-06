@@ -29,3 +29,30 @@
 .QuizList h1{
     color: #fff;
 }
+.homeDnd__secondUl{
+    padding:5px;
+}
+.homeDnd__secondIl{
+    box-sizing: border-box;
+    padding: 5px;
+}
+.homeDnd__secondP{
+    margin: 5px;
+}
+.custom_icon_heart::before {
+    color:brown;
+    margin-left: 5px;
+    text-shadow: 0 0 5px #FF7B6A, 0 0 5px #FF7B6A, 0 0 5px #FF7B6A;
+}
+.margin__left{
+    position: absolute;
+    right: 0;
+    top: 0;
+    opacity: 1;
+    color: burlywood;
+}
+.positionRel{
+    position: relative;
+    background-color: rgba(175, 203, 238, 0.45);
+    border-radius: 3px;
+}

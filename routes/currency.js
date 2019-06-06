@@ -8,5 +8,9 @@ router.post('/getall', controller.getAll);
 router.post('/update', controller.update);
 // localhost:5000/currency/add
 router.post('/add', controller.add);
+// localhost:5000/currency/add
+router.post('/get', controller.get);
+// localhost:5000/currency/updateDelete
+router.post('/updateDelete', controller.updateDelete);
 
 module.exports = router;

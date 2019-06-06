@@ -1,5 +1,4 @@
 .QuizList{
-    display: flex;
     justify-content: center;
     padding-top: 100px;
     flex-grow: 1;
@@ -9,8 +8,17 @@
     background-size: cover;
     position: relative;
     z-index: 0;
+    max-width: 100%;
+    display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.contentScroll{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 100%;
 }
 
 .QuizList::before {
@@ -83,6 +91,7 @@ a {
 * {box-sizing: border-box;}
 body {margin: 0;}
 .container {
+    overflow: auto;
     max-width: 100%;
     margin: 0 auto;
     padding: 0 auto;
@@ -121,4 +130,17 @@ td:first-child {
     td:first-child {
         padding: 0px;
     }
+}
+.positionRel{
+    position: relative;
+    background-color: rgba(175, 203, 238, 0.45);
+    border-radius: 3px;
+}
+.margin__left{
+    position: absolute;
+    right: 0;
+    top: 0;
+    opacity: 1;
+    color: burlywood;
+    margin:3px;
 }

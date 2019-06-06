@@ -18,9 +18,9 @@ module.exports.add = async ( req, res ) => {
 
     const dateUpdate = newDateUpdate && oldDateUpdate;
     if (!dateUpdate) {
+      await Currency.deleteMany( {} );
       for (let i = 0; i < 31; i++) {
         let dataByDate = moment( dDateRevString ).subtract( i, 'days' ).format( FORMAT_TYPE );
-        console.log( '-----dateUpdate', dataByDate );
         const resp = await request( {
           json: true,
           method: 'GET',
@@ -31,15 +31,14 @@ module.exports.add = async ( req, res ) => {
         );
         currency.save();
       }
-
+      res.status( 201 ).json( true )
     } else {
-      const allCurrency = await Currency.find();
-      res.status( 201 ).json( allCurrency )
+      console.log( '-----', );
+      res.status( 201 ).json( true )
     }
   } catch (err) {
     res.status( 500 ).send( err );
   }
-
 };
 module.exports.getAll = async ( req, res ) => {
   const candidate = await Currency.find();
@@ -49,15 +48,45 @@ module.exports.getAll = async ( req, res ) => {
 };
 
 module.exports.update = async ( req, res ) => {
-  console.log( 'req.body', req.body );
-  const currency = new MyCurrency( {
+  const candidate = await MyCurrency.find( {
     value: req.body.value,
     email: req.body.email
   } );
-  try {
-    await currency.save();
-    res.status( 201 )
-  } catch (e) {
-    errorHandler( res, e )
+  if (candidate.length !== 0) {
+    //user use again
+    res.status( 409 ).json( {
+      message: 'such an currency is already taken'
+    } )
+  } else {
+    const currency = new MyCurrency( {
+      value: req.body.value,
+      email: req.body.email
+    } );
+    try {
+      await currency.save();
+      res.status( 201 ).json( {message: ` You like currency ${req.body.value} `} )
+    } catch (e) {
+      errorHandler( res, e )
+    }
+  }
+};
+module.exports.updateDelete = async ( req, res ) => {
+  await MyCurrency.findOneAndDelete( {
+    value: req.body.value,
+    email: req.body.email
+  } );
+  const currency = await MyCurrency.find( {
+    email: req.body.email
+  } );
+  if (currency) {
+    res.status( 201 ).json( currency )
+  }
+};
+module.exports.get = async ( req, res ) => {
+  const currency = await MyCurrency.find( {
+    email: req.body.email
+  } );
+  if (currency) {
+    res.status( 201 ).json( currency )
   }
 };
