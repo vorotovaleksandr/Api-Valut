@@ -4,8 +4,8 @@ const errorHandler = require( '../routes/utils/errorHandler' );
 const request = require( 'request-promise' );
 const moment = require( 'moment' );
 const FORMAT_TYPE = 'DD.MM.YYYY';
-let dDateRevString = moment().format( FORMAT_TYPE );
-let dMaxDateRevString = moment().subtract( 30, 'days' ).format( FORMAT_TYPE );
+const dDateRevString = moment().format( FORMAT_TYPE );
+const dMaxDateRevString = moment().subtract( 30, 'days' ).format( FORMAT_TYPE );
 
 module.exports.add = async ( req, res ) => {
   try {
@@ -18,9 +18,10 @@ module.exports.add = async ( req, res ) => {
 
     const dateUpdate = newDateUpdate && oldDateUpdate;
     if (!dateUpdate) {
-      await Currency.deleteMany( {} );
+      await Currency.remove( {} );
       for (let i = 0; i < 31; i++) {
-        let dataByDate = moment( dDateRevString ).subtract( i, 'days' ).format( FORMAT_TYPE );
+        let dataByDate = moment().subtract( i, 'days' ).format( FORMAT_TYPE );
+        console.log('-----dataByDate', dataByDate);
         const resp = await request( {
           json: true,
           method: 'GET',
@@ -33,7 +34,6 @@ module.exports.add = async ( req, res ) => {
       }
       res.status( 201 ).json( true )
     } else {
-      console.log( '-----', );
       res.status( 201 ).json( true )
     }
   } catch (err) {

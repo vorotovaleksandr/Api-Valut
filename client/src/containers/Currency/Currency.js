@@ -39,7 +39,9 @@ const defaultState = {
   dDateRevString: moment().format( FORMAT_TYPE ),
   dMaxDateRevString: moment().subtract( 30, 'days' ).format( FORMAT_TYPE ),
   data: [],
-  popUpCurrencyShowHistory: false
+  popUpCurrencyShowHistory: false,
+  sortExchangeRate: [],
+  sortShow: true,
 };
 
 class Currency extends Component {
@@ -47,10 +49,10 @@ class Currency extends Component {
   buffer = this.state;
 
   componentDidMount() {
-    if(this.state.currency.length === 0) {
+    if (this.state.currency.length === 0) {
       axios( {
         url: 'http://localhost:5000/currency/add',
-        method: 'POST',
+        method: 'GET',
       } ).then( req => {
         console.log( '-----req', req );
         axios( {
@@ -123,7 +125,7 @@ class Currency extends Component {
           }
         } );
       } )
-    }else{
+    } else {
       this.setState( {
         isLoading: false,
       } );
@@ -236,17 +238,79 @@ class Currency extends Component {
   };
 
   render() {
-    const currencyPurchaseRate = [];
-    const currencySalesRate = [];
+
     const state = this.state;
     const popUp = state.popUpShow;
     const popUpCur = state.popUpCurrencyShow;
+    const currencyPurchaseRate = [];
+    const currencySalesRate = [];
+    const exchangeRateSort = [];
+    const sortCurrencyPurchaseRate = [];
+    const sortCurrencySalesRate = [];
+    const sortCurrency = [];
 
     return (
       <div
         onClick={this.popUpDontShows}
         className={classes.QuizList}
       >
+        {!state.sortShow && <Query
+          query={gql`
+      {currencys{exchangeRate{currency,baseCurrency,saleRateNB,purchaseRateNB}}}
+    `}
+        >
+          {( {loading, error, data} ) => {
+            if (loading) return <p>Loading...</p>;
+            if (error) return <p>Error :(</p>;
+            console.log( '-----data.currencys', data.currencys );
+            data.currencys.forEach( ( item ) => {
+                item.exchangeRate.forEach( ( item ) => {
+                  exchangeRateSort.push( {
+                    currency: item.currency,
+                    purchaseRate: item.purchaseRateNB,
+                    saleRate: item.saleRateNB
+                  } )
+                } );
+              }
+            );
+            state.currencyTitle.forEach( ( currency ) => {
+              let sortInTitle = exchangeRateSort.filter( el => el.currency === currency );
+              sortInTitle.forEach( ( item ) => {
+                sortCurrencyPurchaseRate.push(
+                  +item.purchaseRate
+                );
+                sortCurrencySalesRate.push(
+                  +item.saleRate
+                );
+                let minPurItem = Math.min.apply( null, sortCurrencyPurchaseRate );
+                let maxPurItem = Math.max.apply( null, sortCurrencyPurchaseRate );
+                let minSaleItem = Math.min.apply( null, sortCurrencySalesRate );
+                let maxSaleItem = Math.max.apply( null, sortCurrencySalesRate );
+                sortCurrency.push( {
+                  minPurItem,
+                  maxPurItem,
+                  minSaleItem,
+                  maxSaleItem,
+                  currency: item.currency
+                } )
+              } )
+            } )
+
+            return (
+              <div
+                className={classes.positionRel}
+              >
+                {console.log('-----sortCurrency', sortCurrency)}
+                <ListGroup>
+                  <ListGroup.Item variant="success">Max selling price : </ListGroup.Item>
+                  <ListGroup.Item variant="danger">Min selling price : </ListGroup.Item>
+                  <ListGroup.Item variant="success">Max purchase price: </ListGroup.Item>
+                  <ListGroup.Item variant="danger">Min purchase price: </ListGroup.Item>
+                </ListGroup>
+              </div>
+            );
+          }}
+        </Query>}
         {state.popUpCurrencyShowHistory && <Query
           query={gql`
       {history(item:"${state.popUpCurrencyShow.value}"){exchangeRate{currency,baseCurrency,saleRateNB,purchaseRateNB}}}
@@ -334,6 +398,7 @@ class Currency extends Component {
           </div>
           {state.isLoading && <CircularUnderLoad/>}
           <DatePicker
+            inline
             minDate={subDays( new Date(), 30 )}
             maxDate={new Date()}
             selected={state.form.date.value}

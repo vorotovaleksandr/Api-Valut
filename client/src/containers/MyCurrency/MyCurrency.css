@@ -55,4 +55,6 @@
     position: relative;
     background-color: rgba(175, 203, 238, 0.45);
     border-radius: 3px;
+    margin-top: 15px;
+    padding: 20px;
 }

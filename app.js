@@ -3,11 +3,13 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { ApolloServer,gql } = require('apollo-server-express');
+const cron = require("node-cron");
 const typeDef = require('./models/graphql');
 const resolvers = require('./controllers/graphql');
 const authRoutes = require('./routes/auth');
 const checkToken = require('./routes/check');
 const currencyRoutes = require('./routes/currency');
+const add = require('./controllers/crone');
 const keys = require('./config/keys');
 
 const app = express();
@@ -25,7 +27,9 @@ mongoose.connect(keys.mongoURI, {
   .then(() => console.log('MongoDB connected.'))
   .catch(error => console.log(error));
 
-
+//crone
+cron.schedule("59 23 * * *", add
+);
 // Provide resolver functions for your schema fields
 const typeDefs = typeDef;
 
