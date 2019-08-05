@@ -7,7 +7,7 @@
   + https://docs.mongodb.com/manual/installation/
 ### Super Easy Install
 ```
-git clone https://github.com/vorotovaleksandr/testReact.git
+git clone https://github.com/vorotovaleksandr/Api-Valut.git
 cd test react 
 cd client
 yarn install
