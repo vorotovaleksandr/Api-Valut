@@ -12,7 +12,7 @@
   "author": "vorotovaleksandr <vorotovaleksandr.exceedteam@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "apollo-server-express": "^2.6.1",
+    "apollo-server-express": "^2.14.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "connect-mongo": "^2.0.3",
